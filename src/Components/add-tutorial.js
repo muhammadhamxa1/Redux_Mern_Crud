@@ -1,91 +1,93 @@
 import React, { useState } from "react";
-import TutorialDataService from "../services/tutorial.services";
+import { useDispatch } from "react-redux";
+import { createTutorial } from "../actions/tutorial.js";
 
 const AddTutorial = () => {
-  const [id, setId] = useState(null);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [published, setPublished] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  // const [data,setData]=useState(null);
-
-  const onChangeTitle = (e) => {
-    setTitle(e.target.value);
+  const initialTutorialState = {
+    id: null,
+    title: "",
+    description: "",
+    published: false,
   };
+  const [tutorial, setTutorial] = useState(initialTutorialState);
+  const [submitted, setSubmitted] = useState(false);
 
-  const onChangeDescription = (e) => {
-    setDescription(e.target.value);
+  const dispatch = useDispatch();
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setTutorial({ ...tutorial, [name]: value });
   };
 
   const saveTutorial = () => {
-    var data = {
-      title: title,
-      description: description
-    } 
-
-    TutorialDataService.create(data)
-      .then(res => {
-        console.log(res.data);
+    const { title, description } = tutorial;
+    console.log(tutorial);
+    dispatch(createTutorial(title, description))
+   
+      .then((data) => {
+        setTutorial({
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          published: data.published,
+        });
         setSubmitted(true);
+
+        console.log(data);
       })
-      .catch(e => {
+      .catch((e) => {
         console.log(e);
       });
   };
 
   const newTutorial = () => {
-    setId(null);
-    setTitle("");
-    setDescription("");
-    setPublished(false);
+    setTutorial(initialTutorialState);
     setSubmitted(false);
   };
 
   return (
-    <>
-      <div className="submit-form">
-        {submitted ? (
-          <div>
-            <h4>You submitted successfully!</h4>
-            <button className="btn btn-success" onClick={newTutorial}>
-              Add
-            </button>
+    <div className="submit-form">
+      {submitted ? (
+        <div>
+          <h4>You submitted successfully!</h4>
+          <button className="btn btn-success" onClick={newTutorial}>
+            Add
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div className="form-group">
+            <label htmlFor="title">Title</label>
+            <input
+              type="text"
+              className="form-control"
+              id="title"
+              required
+              value={tutorial.title}
+              onChange={handleInputChange}
+              name="title"
+            />
           </div>
-        ) : (
-          <div className="col-6">
-            <div className="form-group">
-              <label htmlFor="title">Title</label>
-              <input
-                type="text"
-                className="form-control"
-                id="title"
-                required
-                value={title}
-                onChange={onChangeTitle}
-                name="title"
-              />
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="description">Description</label>
-              <input
-                type="text"
-                className="form-control"
-                id="description"
-                required
-                value={description}
-                onChange={onChangeDescription}
-                name="description"
-              />
-            </div>
-
-            <button onClick={saveTutorial} className="btn btn-success">
-              Submit
-            </button>
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <input
+              type="text"
+              className="form-control"
+              id="description"
+              required
+              value={tutorial.description}
+              onChange={handleInputChange}
+              name="description"
+            />
           </div>
-        )}
-      </div>
-    </>
+
+          <button onClick={saveTutorial} className="btn btn-success">
+            Submit
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
